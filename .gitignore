@@ -1,5 +1,7 @@
 .DS_Store
 .vscode
 
- balloon-game-mobile/dist/
- 
+**/dist
+**/node_modules
+**/tmp
+**/target
