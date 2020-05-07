@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon;
+package com.redhat.developer.balloon.types;
 
 public class GameBonus {
 
@@ -9,10 +9,10 @@ public class GameBonus {
 	private Integer bonus;
 	private String description;
 
-	public GameBonus() {
-	}
+	public GameBonus() {}
 
-	public GameBonus(String playerId, String playerName, String achievement, Integer bonus, String description) {
+	public GameBonus(String playerId, String playerName, String achievement,
+			Integer bonus, String description) {
 		super();
 		this.playerId = playerId;
 		this.playerName = playerName;
@@ -36,7 +36,7 @@ public class GameBonus {
 	public void setPlayerName(String playerName) {
 		this.playerName = playerName;
 	}
-	
+
 	public String getAchievement() {
 		return achievement;
 	}
@@ -44,7 +44,7 @@ public class GameBonus {
 	public void setAchievement(String achievement) {
 		this.achievement = achievement;
 	}
-	
+
 	public void addAchievement(String achievement) {
 		if (this.achievement == null) {
 			this.achievement = "";
@@ -59,10 +59,10 @@ public class GameBonus {
 	public void setBonus(Integer bonus) {
 		this.bonus = bonus;
 	}
-	
+
 	public void addBonus(Integer bonus) {
 		if (this.bonus == null) {
-			this.bonus = new Integer(0);
+			this.bonus = Integer.valueOf("0");
 		}
 		this.bonus += bonus;
 	}
@@ -77,7 +77,8 @@ public class GameBonus {
 
 	@Override
 	public String toString() {
-		return "GameBonus [playerId=" + playerId + ", playerName=" + playerName + ", achievement=" + achievement + ", bonus=" + bonus
+		return "GameBonus [playerId=" + playerId + ", playerName=" + playerName
+				+ ", achievement=" + achievement + ", bonus=" + bonus
 				+ ", description=" + description + "]";
 	}
 

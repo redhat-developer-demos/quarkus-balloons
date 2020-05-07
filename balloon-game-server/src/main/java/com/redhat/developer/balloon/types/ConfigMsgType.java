@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon;
+package com.redhat.developer.balloon.types;
 
 public class ConfigMsgType {
   private String type;

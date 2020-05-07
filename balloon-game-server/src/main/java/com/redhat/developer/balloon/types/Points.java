@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon;
+package com.redhat.developer.balloon.types;
 
 public class Points {
   private int red;
@@ -11,22 +11,23 @@ public class Points {
   public Points() {
 
   }
-  
+
   public Points(
-      int red, 
+      int red,
       int yellow,
       int green,
       int blue,
       int goldenSnitch1,
       int goldenSnitch2) {
-        this.red = red;
-        this.yellow = yellow;
-        this.green = green;
-        this.blue = blue;
-        this.goldenSnitch1 = goldenSnitch1;
-        this.goldenSnitch2 = goldenSnitch2;
+    this.red = red;
+    this.yellow = yellow;
+    this.green = green;
+    this.blue = blue;
+    this.goldenSnitch1 = goldenSnitch1;
+    this.goldenSnitch2 = goldenSnitch2;
 
   }
+
   public int getRed() {
     return red;
   }
@@ -50,16 +51,10 @@ public class Points {
   public int getGoldenSnitch2() {
     return goldenSnitch2;
   }
-  
+
 }
 
 /*
-	"points": {
-		"red": 1,
-		"yellow": 1,
-		"green": 1,
-		"blue": 1,
-		"goldenSnitch1": 100,
-		"goldenSnitch2": 100
-	}
-*/
+ * "points": { "red": 1, "yellow": 1, "green": 1, "blue": 1, "goldenSnitch1": 100, "goldenSnitch2":
+ * 100 }
+ */

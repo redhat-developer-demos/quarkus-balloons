@@ -1,6 +1,6 @@
 package com.redhat.developer.balloon.json;
 
-import com.redhat.developer.balloon.GameBonus;
+import com.redhat.developer.balloon.types.GameBonus;
 
 import io.quarkus.kafka.client.serialization.JsonbDeserializer;
 import io.quarkus.runtime.annotations.RegisterForReflection;

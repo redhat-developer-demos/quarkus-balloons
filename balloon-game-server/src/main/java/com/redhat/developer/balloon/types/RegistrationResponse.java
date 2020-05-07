@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon;
+package com.redhat.developer.balloon.types;
 
 public class RegistrationResponse {
   private int score;
@@ -9,8 +9,9 @@ public class RegistrationResponse {
   private Config configuration;
   private String locationKey;
 
-  public RegistrationResponse(int score, int team, String playerId, String username, String type,
-  Config configuration, String locationKey) {
+  public RegistrationResponse(int score, int team, String playerId,
+      String username, String type,
+      Config configuration, String locationKey) {
     this.score = score;
     this.team = team;
     this.playerId = playerId;

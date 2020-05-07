@@ -1,12 +1,5 @@
 version: "3.7"
 services:
-  infinispan:
-    image: quay.io/infinispan/server:10.1.7.Final-1
-    ports:
-      - "11222:11222"
-    environment:
-      USER: "infinispan"
-      PASS: "password"
   zookeeper:
     image: strimzi/kafka:0.17.0-kafka-2.4.0
     command:

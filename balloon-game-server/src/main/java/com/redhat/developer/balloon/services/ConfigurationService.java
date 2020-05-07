@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon;
+package com.redhat.developer.balloon.services;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
