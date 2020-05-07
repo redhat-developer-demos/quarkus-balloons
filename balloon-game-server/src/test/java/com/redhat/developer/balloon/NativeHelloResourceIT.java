@@ -1,8 +1,8 @@
 package com.redhat.developer.balloon;
 
-import io.quarkus.test.junit.SubstrateTest;
+import io.quarkus.test.junit.QuarkusTest;
 
-@SubstrateTest
+@QuarkusTest
 public class NativeHelloResourceIT extends HelloResourceTest {
 
     // Execute the same tests but in native mode.

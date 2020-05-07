@@ -15,10 +15,30 @@ spec:
         app: configservice-default
     spec:
       containers:
-      - name: configservice
-        image: quay.io/burrsutter/configuration-service-default:1.0.3
-        ports:
-          - containerPort: 8080
-        env:
-        - name: QUARKUS_HTTP_PORT
-          value: '8080'
+        - name: configservice
+          image: quay.io/rhdevelopers/balloon-game-config:default
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_HTTP_PORT
+              value: "8080"
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /health/live
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 1
+            periodSeconds: 3
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "500Mi"
+              cpu: "500m"
