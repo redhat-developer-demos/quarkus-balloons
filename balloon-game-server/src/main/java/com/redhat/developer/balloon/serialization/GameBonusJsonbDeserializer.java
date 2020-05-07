@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon.json;
+package com.redhat.developer.balloon.serialization;
 
 import com.redhat.developer.balloon.types.GameBonus;
 
