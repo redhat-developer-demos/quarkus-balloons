@@ -6,8 +6,8 @@ metadata:
     app: configservice-default
 spec:
   ports:
-  - name: http
-    port: 8080
+    - name: http
+      port: 8080
   selector:
     app: configservice-default
   type: ClusterIP
