@@ -4,9 +4,9 @@
 **/dist/
 **/tmp/
  
- **/target
- **/node_modules
- **/.settings
- **/.project
- **/.classpath
- **/.factorypath
+target
+node_modules
+.settings
+.project
+.classpath
+.factorypath

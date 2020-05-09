@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
         - name: gameclient
-          image: quay.io/rhdevelopers/balloon-game-client:v1.0.0
+          image: quay.io/rhdevelopers/balloon-game-client
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
