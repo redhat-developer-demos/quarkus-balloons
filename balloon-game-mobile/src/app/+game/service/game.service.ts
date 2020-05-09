@@ -45,12 +45,12 @@ export class GameService {
     score3: 'star',
     gold: 'golden'
   };
-  configuration: Object = {};  
+  configuration: Object = {};
   // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.aws.burrsutter.org/game' : 'ws://localhost:8080/game';
   // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.gcp.burrsutter.dev/game' : 'ws://localhost:8080/game';
   // socketUrl: string = (environment.production) ? 'wss://gameserver-game.apps.azr.burrsutter.net/game' : 'ws://localhost:8080/game';
   // socketUrl: string = ((window.location.protocol === "https:") ? 'wss://' : 'ws://') + window.location.host + '/game';
-  socketUrl: string = 'ws://localhost:8080/game';
+  socketUrl: string = 'wss://gameserver-game.apps.gcp.kameshs.dev/game';
   @Output() stateChange = new EventEmitter();
   @Output() configurationChange = new EventEmitter();
   @Output() achievementsChange = new EventEmitter();
@@ -92,12 +92,12 @@ export class GameService {
   incrementPlayerScore(score: number) {
     console.log("incrementPlayerScore");
     this.playerScore += score;
-    localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));    
-    
+    localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
+
     this.sendMessage({
       type: 'score',
       score: this.playerScore,
-      encryptedScore: sjcl.encrypt(''+this.playerId, ''+this.playerScore),
+      encryptedScore: sjcl.encrypt('' + this.playerId, '' + this.playerScore),
       consecutive: 0,
       goldenSnitchPopped: false
     });
@@ -157,7 +157,7 @@ export class GameService {
     } else {
       achievement.desc = achievement.description;
     }
-    
+
     this.achievements.push(achievement);
     localStorage.setItem(this._achievementsKey, JSON.stringify(this.achievements));
     this.achievementsChange.emit(achievement);
@@ -165,7 +165,7 @@ export class GameService {
     console.log("Achievement Bonus! " + achievement.bonus);
     this.playerScore = this.playerScore + achievement.bonus;
     localStorage.setItem(this._playerScoreKey, JSON.stringify(this.playerScore));
-    
+
   }
 
   private onOpen(evt) {
@@ -183,7 +183,7 @@ export class GameService {
       message['team'] = this.playerTeam.number;
     }
 
-    if (this.playerUsername) { 
+    if (this.playerUsername) {
       message['username'] = this.playerUsername;
     }
     // console.log("onOpen: " + JSON.stringify(message));
@@ -244,16 +244,16 @@ export class GameService {
     if (data.type === 'configuration') {
       console.log("onMessage: configuration=" + JSON.stringify(data.configuration));
       // Burr
-      if (data.username) { 
+      if (data.username) {
         console.log("\n\n PLAYER: " + data.username);
 
         if (data.locationKey) {
           console.log("\n\n LOCATION: " + data.locationKey + "\n\n");
           data.username = data.username + " on " + data.locationKey;
         }
-          
+
         localStorage.setItem(this._usernameKey, data.username);
-        this.playerUsername = data.username;      
+        this.playerUsername = data.username;
       }
 
       if (data.team) {
@@ -295,16 +295,16 @@ export class GameService {
         let found = false;
 
         this.achievements.forEach(achievement => {
-            if (messageAchievement.type === achievement.type) {
-              found = true;
-            }
+          if (messageAchievement.type === achievement.type) {
+            found = true;
+          }
         });
 
         // You can only receive/achieve an achievement one time
         if (found) {
           return;
         }
-        
+
 
         this.updateAchievements(messageAchievement);
       });

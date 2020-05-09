@@ -26,10 +26,10 @@ spec:
               value: http://configservice-default.game.svc.cluster.local:8080
             - name: LOCATION_KEY
               value: rhd
-          # volumeMounts:
-          #   - name: public-key
-          #     mountPath: "/usr/app"
-          #     readOnly: true
+          volumeMounts:
+            - name: public-key
+              mountPath: "/usr/app"
+              readOnly: true
           resources:
             requests:
               memory: "2000Mi"
@@ -50,10 +50,10 @@ spec:
               port: 8080
             initialDelaySeconds: 1
             periodSeconds: 3
-      # volumes:
-      #   - name: public-key
-      #     secret:
-      #       secretName: jwt-public-key
-      #       items:
-      #         - key: publicKey
-      #           path: publicKey
+      volumes:
+        - name: public-key
+          secret:
+            secretName: jwt-public-key
+            items:
+              - key: publicKey
+                path: publicKey
