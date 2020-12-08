@@ -10,3 +10,4 @@ node_modules
 .project
 .classpath
 .factorypath
+.tool-versions

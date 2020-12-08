@@ -1,5 +1,7 @@
 package com.redhat.developer.balloon.endpoints;
 
+import com.redhat.developer.balloon.types.Game;
+import com.redhat.developer.balloon.types.GameMessage;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.security.RolesAllowed;
@@ -9,23 +11,25 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import com.redhat.developer.balloon.services.GameService;
-import com.redhat.developer.balloon.types.Config;
-import com.redhat.developer.balloon.types.ConfigMsgType;
+import com.redhat.developer.balloon.types.Configuration;
 import com.redhat.developer.balloon.types.Points;
 
 // @RolesAllowed("admin")
-@Path("/a")
+@Path("/api/game")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class GameAdminResource {
 
   private static final Logger LOGGER =
-      Logger.getLogger(GameAdminResource.class.getName());
+    Logger.getLogger(GameAdminResource.class.getName());
 
   GameService gameService;
 
@@ -34,59 +38,70 @@ public class GameAdminResource {
   }
 
   @GET
-  @Path("/start")
-  public Response startGame() {
-    var startGameMsg = gameService.start();
-    gameService.broadcast(startGameMsg.toString());
-    return Response.status(200).build();
-  }
-
-  @GET
   @Path("/play")
   public Response playGame() {
-    JsonObject playGameMsg = gameService.play();
-    gameService.broadcast(playGameMsg.toString());
-    return Response.status(200).build();
+    GameMessage playGameMsg = gameService.play();
+    gameService.broadcast(playGameMsg);
+    return Response.noContent()
+                   .build();
   }
 
   @GET
   @Path("/pause")
   public Response pauseGame() {
-    JsonObject pauseGameMsg = gameService.pause();
-    gameService.broadcast(pauseGameMsg.toString());
-    return Response.status(200).build();
+    GameMessage pauseGameMsg = gameService.pause();
+    gameService.broadcast(pauseGameMsg);
+    return Response.noContent()
+                   .build();
   }
 
   @GET
-  @Path("/gameover")
+  @Path("/stop")
   public Response gameOver() {
-    JsonObject pauseGameMsg = gameService.pause();
-    gameService.broadcast(pauseGameMsg.toString());
-    return Response.status(200).build();
+    GameMessage pauseGameMsg = gameService.stop();
+    gameService.broadcast(pauseGameMsg);
+    return Response.noContent()
+                   .build();
   }
 
   @GET
-  @Path("/gamestate")
+  @Path("/lobby")
+  public Response lobby() {
+    GameMessage lobbyGameMessage = gameService.lobby();
+    gameService.broadcast(lobbyGameMessage);
+    return Response.noContent()
+                   .build();
+  }
+
+  @GET
+  @Path("/state")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response gamestate() {
-    return Response.ok(gameService.currentGameState).status(200).build();
+  public Response gameState() {
+    return Response.ok(gameService.currentGameState)
+                   .status(200)
+                   .build();
   }
 
   @GET
   @Path("/config")
   @Produces(MediaType.APPLICATION_JSON)
   public Response config() {
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
   @GET
   @Path("/sessions")
   public Response sessions() {
     StringBuffer sb = new StringBuffer();
-    gameService.getSessions().forEach(session -> {
-      sb.append(session.getId() + "<br>");
-    });
-    return Response.ok(sb.toString()).status(200).build();
+    gameService.getSessions()
+               .forEach(session -> {
+                 sb.append(session.getId() + "<br>");
+               });
+    return Response.ok(sb.toString())
+                   .status(200)
+                   .build();
   }
 
   // TODO: can use infinispan queries
@@ -109,54 +124,54 @@ public class GameAdminResource {
   // }
 
 
-
   @GET
   @Path("/achieve")
   @Produces(MediaType.APPLICATION_JSON)
   public Response achievement() {
     // There can be multiple achievements so send them all to all players
     JsonArray achievements = Json.createArrayBuilder()
-        .add(Json.createObjectBuilder()
-            .add("type", "pops1")
-            .add("description", "1 in a row!")
-            .add("bonus", 10))
-        .add(Json.createObjectBuilder()
-            .add("type", "pops2")
-            .add("description", "2 in a row!")
-            .add("bonus", 20))
-        .add(Json.createObjectBuilder()
-            .add("type", "pops3")
-            .add("description", "3 in a row!")
-            .add("bonus", 30))
-        .add(Json.createObjectBuilder()
-            .add("type", "score1")
-            .add("description", "Level 1")
-            .add("bonus", 100))
-        .add(Json.createObjectBuilder()
-            .add("type", "score2")
-            .add("description", "Level 2")
-            .add("bonus", 200))
-        .add(Json.createObjectBuilder()
-            .add("type", "score3")
-            .add("description", "Level 3")
-            .add("bonus", 300))
-        .add(Json.createObjectBuilder()
-            .add("type", "golden")
-            .add("description", "Solid Gold")
-            .add("bonus", 1000))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "pops1")
+                                          .add("description", "1 in a row!")
+                                          .add("bonus", 10))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "pops2")
+                                          .add("description", "2 in a row!")
+                                          .add("bonus", 20))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "pops3")
+                                          .add("description", "3 in a row!")
+                                          .add("bonus", 30))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "score1")
+                                          .add("description", "Level 1")
+                                          .add("bonus", 100))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "score2")
+                                          .add("description", "Level 2")
+                                          .add("bonus", 200))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "score3")
+                                          .add("description", "Level 3")
+                                          .add("bonus", 300))
+                                 .add(Json.createObjectBuilder()
+                                          .add("type", "golden")
+                                          .add("description", "Solid Gold")
+                                          .add("bonus", 1000))
 
-        .build();
-
+                                 .build();
 
     JsonObject allAcheivements = Json.createObjectBuilder()
-        .add("type", "achievements")
-        .add("achievements", achievements)
-        .build();
+                                     .add("type", "achievements")
+                                     .add("achievements", achievements)
+                                     .build();
 
     // for testing purposes, sending all players
     gameService.broadcast(allAcheivements.toString());
 
-    return Response.ok(allAcheivements).status(200).build();
+    return Response.ok(allAcheivements)
+                   .status(200)
+                   .build();
   }
 
   @GET
@@ -165,24 +180,26 @@ public class GameAdminResource {
   public Response easyconfig() {
 
     Points easyPoints = new Points(
-        4, 2, 3, 1, 100, 100);
+      4, 2, 3, 1, 100, 100);
 
-    Config easyGame = new Config(
-        gameService.currentGameId,
-        "default", // background
-        100, // ignore
-        "1.0", // size
-        85, // opacity
-        35, // speed
-        false, // snitch1
-        false, // snitch2
-        easyPoints);
+    Configuration easyGame = new Configuration(
+      gameService.currentGameId,
+      "default", // background
+      100, // ignore
+      "1.0", // size
+      85, // opacity
+      35, // speed
+      false, // snitch1
+      false, // snitch2
+      easyPoints);
 
     gameService.currentGame = easyGame;
 
     sendGameConfigUpdate();
 
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
   @GET
@@ -191,24 +208,26 @@ public class GameAdminResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response hardconfig() {
     Points hardPoints = new Points(
-        4, 2, 3, 1, 100, 100);
+      4, 2, 3, 1, 100, 100);
 
-    Config hardGame = new Config(
-        gameService.currentGameId,
-        "default", // background
-        100, // ignore
-        ".3", // size
-        50, // opacity
-        95, // speed
-        false, // snitch1
-        false, // snitch2
-        hardPoints);
+    Configuration hardGame = new Configuration(
+      gameService.currentGameId,
+      "default", // background
+      100, // ignore
+      ".3", // size
+      50, // opacity
+      95, // speed
+      false, // snitch1
+      false, // snitch2
+      hardPoints);
 
     gameService.currentGame = hardGame;
 
     sendGameConfigUpdate();
 
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
 
@@ -217,26 +236,30 @@ public class GameAdminResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitch1() {
 
-    gameService.currentGame.setGoldenSnitch1(Boolean.TRUE);
-    gameService.currentGame.setGoldenSnitch2(Boolean.FALSE);
-    gameService.currentGame.setBackground("green");
+    gameService.currentGame.goldenSnitch1 = Boolean.TRUE;
+    gameService.currentGame.goldenSnitch2 = Boolean.FALSE;
+    gameService.currentGame.background = "green";
 
     sendGameConfigUpdate();
 
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
   @GET
   @Path("/blue")
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitch2() {
-    gameService.currentGame.setGoldenSnitch1(Boolean.FALSE);
-    gameService.currentGame.setGoldenSnitch2(Boolean.TRUE);
-    gameService.currentGame.setBackground("blue");
+    gameService.currentGame.goldenSnitch1 = Boolean.FALSE;
+    gameService.currentGame.goldenSnitch2 = Boolean.TRUE;
+    gameService.currentGame.background = "blue";
 
     sendGameConfigUpdate();
 
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
   @GET
@@ -244,13 +267,15 @@ public class GameAdminResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response goldenSnitchBoth() {
 
-    gameService.currentGame.setGoldenSnitch1(Boolean.TRUE);
-    gameService.currentGame.setGoldenSnitch2(Boolean.TRUE);
-    gameService.currentGame.setBackground("canary");
+    gameService.currentGame.goldenSnitch1 = Boolean.TRUE;
+    gameService.currentGame.goldenSnitch2 = Boolean.TRUE;
+    gameService.currentGame.background = "canary";
 
     sendGameConfigUpdate();
 
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
 
@@ -263,35 +288,39 @@ public class GameAdminResource {
     gameService.prevPolledResponse = "";
 
     Points defaultPoints = new Points(
-        1, 1, 1, 1, 50, 50);
+      1, 1, 1, 1, 50, 50);
 
-    Config defaultGame = new Config(
-        gameService.currentGameId,
-        "default", // background
-        100, // ignore
-        "0.6", // size
-        85, // opacity
-        70, // speed
-        false, // snitch1
-        false, // snitch2
-        defaultPoints);
-
-    gameService.currentGame = defaultGame;
+    gameService.currentGame = new Configuration(
+      gameService.currentGameId,
+      "default", // background
+      100, // ignore
+      "0.6", // size
+      85, // opacity
+      70, // speed
+      false, // snitch1
+      false, // snitch2
+      defaultPoints);
+    ;
 
     sendGameConfigUpdate();
 
-    return Response.ok(gameService.currentGame).status(200).build();
+    return Response.ok(gameService.currentGame)
+                   .status(200)
+                   .build();
   }
 
   void sendGameConfigUpdate() {
     Jsonb jsonb = JsonbBuilder.create();
 
-    ConfigMsgType type =
-        new ConfigMsgType("configuration", gameService.currentGame);
-    String stringJsonMsgType = jsonb.toJson(type);
+    Game game = new Game();
+    game.configuration = gameService.currentGame;
 
+    GameMessage gameMessage = new GameMessage();
+    gameMessage.game = game;
+
+    String stringJsonMsgType = jsonb.toJson(gameMessage);
     LOGGER.log(Level.INFO, "Game Config Update {0}", stringJsonMsgType);
     // broadcast out the websocket to all players
-    gameService.broadcast(stringJsonMsgType);
+    gameService.broadcast(gameMessage);
   }
 }

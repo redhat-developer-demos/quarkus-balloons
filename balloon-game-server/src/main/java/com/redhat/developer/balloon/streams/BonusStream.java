@@ -24,12 +24,12 @@ public class BonusStream {
 		LOG.info("\n!!!BONUSSTREAM!!! " + msg.getPayload().toString());
 
 
-		String achievement = msg.getPayload().getAchievement();
+		String achievement = msg.getPayload().achievement;
 
 		if (achievement != null && !achievement.trim().equals("")) {
-			String playerId = msg.getPayload().getPlayerId();
-			String description = msg.getPayload().getDescription();
-			int bonus = msg.getPayload().getBonus();
+			String playerId = msg.getPayload().playerId;
+			String description = msg.getPayload().description;
+			int bonus = msg.getPayload().bonus;
 			LOG.info("!!! Achievement !!! " + achievement + " for: " + playerId
 					+ " value: " + bonus);
 

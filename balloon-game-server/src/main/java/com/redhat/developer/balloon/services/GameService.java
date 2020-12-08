@@ -1,5 +1,11 @@
 package com.redhat.developer.balloon.services;
 
+import com.redhat.developer.balloon.types.Configuration;
+import com.redhat.developer.balloon.types.GameMessage;
+import com.redhat.developer.balloon.types.GameState;
+import com.redhat.developer.balloon.types.Points;
+import com.redhat.developer.balloon.types.Player;
+import com.redhat.developer.balloon.utils.UserNameGenerator;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -8,273 +14,182 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
-import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 import javax.websocket.Session;
-import com.redhat.developer.balloon.types.Config;
-import com.redhat.developer.balloon.types.Points;
-import com.redhat.developer.balloon.types.RegistrationResponse;
-import com.redhat.developer.balloon.utils.UserNameGenerator;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class GameService {
 
-	private static final Logger LOG =
-			Logger.getLogger(GameService.class.getName());
+  private static final Logger LOG =
+    Logger.getLogger(GameService.class.getName());
 
-	@ConfigProperty(name = "LOCATION_KEY")
-	String locationKey;
+  @ConfigProperty(name = "LOCATION_KEY")
+  String locationKey;
 
-	// @Inject
-	// @Remote("playerSessions")
-	// RemoteCache<String, Session> sessions;
+  public String currentGameState = GameState.lobby.name();
 
-	// websocket client sessions/connections
-	Map<String, Session> sessions = new ConcurrentHashMap<>();
+  // @Inject
+  // @Remote("playerSessions")
+  // RemoteCache<String, Session> sessions;
 
-	// playerMap
-	Map<String, Session> playerSessions = new ConcurrentHashMap<>();
+  // websocket client sessions/connections
+  Map<String, Session> sessions = new ConcurrentHashMap<>();
 
-	// TODO: move to game configuration service
+  // playerMap
+  Map<String, Session> playerSessions = new ConcurrentHashMap<>();
 
-	private static final String STARTGAME = "start-game";
-	private static final String PLAY = "play";
-	private static final String PAUSE = "pause";
-	private static final String GAMEOVER = "game-over";
+  // this value should be reset at "startgame" but hardcoding for now
+  public String currentGameId = UUID.randomUUID()
+                                    .toString();
 
-	// this value should be reset at "startgame" but hardcoding for now
-	public String currentGameId = "ab7e90e1-18a6-94d1-05bb-1e17a9cc8dad";
+  public String prevPolledResponse = "";
+  public int pollCnt = 0;
 
-	public String prevPolledResponse = "";
-	public int pollCnt = 0;
+  Points defaultPoints = new Points(
+    1, 1, 1, 1, 50, 50);
 
-	Points defaultPoints = new Points(
-			1, 1, 1, 1, 50, 50);
+  public Configuration currentGame = new Configuration();
 
-	public Config currentGame = new Config(
-			currentGameId,
-			"default", // background
-			100, // ignore
-			"0.6", // size
-			85, // opacity
-			70, // speed
-			false, // snitch1
-			false, // snitch2
-			defaultPoints);
+  Points pointsC = new Points(1, 1, 1, 1, 50, 50);
 
-	JsonObject pointsConfiguration = Json.createObjectBuilder()
-			.add("red", 1)
-			.add("yellow", 1)
-			.add("green", 1)
-			.add("blue", 1)
-			.add("goldenSnitch1", 50)
-			.add("goldenSnitch2", 50)
-			.build();
+  Configuration defaultGameConfiguration = new Configuration(currentGameId,
+    "default", 100, "0.9", 85, 50, false, false, pointsC);
 
 
-	JsonObject defaultGameConfiguration = Json.createObjectBuilder()
-			.add("gameId", currentGameId)
-			.add("background", "default")
-			.add("trafficPercentage", 100)
-			.add("scale", "0.9")
-			.add("opacity", 85)
-			.add("speed", 50)
-			.add("goldenSnitch1", Boolean.FALSE)
-			.add("goldenSnitch2", Boolean.FALSE)
-			.add("points", pointsConfiguration).build();
+  // send a message to a single client
+  public void sendOnePlayer(String id, String message) {
+    LOG.info("Sending player for session :" + id);
+    Session oneSession = playerSessions.get(id);
+    oneSession.getAsyncRemote()
+              .sendObject(message, result -> {
+                if (result.getException() != null) {
+                  LOG.severe(
+                    "Unable to send message: " + result.getException());
+                }
+              });
+  } // sendOnePlayer
 
-	// current can be overwritten at runtime
-	JsonObject currentGameConfiguration = defaultGameConfiguration;
+  /**
+   * TODO add retry; FaultTolerance
+   */
+  public void broadcast(Object objMessage) {
+    Jsonb jsonb = JsonbBuilder.create();
+    var message = jsonb.toJson(objMessage);
+    LOG.log(Level.INFO, "Sending Message: \n {0}", message);
+    for (String sessionKey : sessions.keySet()) {
+      Session session = sessions.get(sessionKey);
+      session.getAsyncRemote()
+             .sendObject(message, result -> {
+               if (result.getException() != null) {
 
-	JsonObject startGameMsg = Json.createObjectBuilder()
-			.add("type", "state")
-			.add("state", STARTGAME).build();
+                 LOG.log(Level.SEVERE,
+                   "Unable to send message: "
+                     + result.getException());
+               }
+             });
+    }
+  }
 
-	JsonObject playGameMsg = Json.createObjectBuilder()
-			.add("type", "state")
-			.add("state", PLAY).build();
+  /*
+   * Mobile/Client/Game requests - called at initial page load, refresh of browser
+   */
+  public void registerClient(JsonObject jsonMessage, Session session) {
 
-	JsonObject pauseGameMsg = Json.createObjectBuilder()
-			.add("type", "state")
-			.add("state", PAUSE).build();
+    // right now, always create a new playerId during registration
+    String playerId = UUID.randomUUID()
+                          .toString();
+    // and assigns a new generated user name
+    String username = UserNameGenerator.generate();
+    // and assigns a random team number
+    int teamNumber = ThreadLocalRandom.current()
+                                      .nextInt(1, 5);
+    LOG.info("\nLOCATION_KEY: " + locationKey);
+    LOG.info("\nCreating:");
+    LOG.info("username: " + username);
+    LOG.info("playerId: " + playerId);
+    LOG.info("teamNumber: " + teamNumber);
 
-	JsonObject gameOverMsg = Json.createObjectBuilder()
-			.add("type", "state")
-			.add("state", GAMEOVER).build();
+    playerSessions.putIfAbsent(playerId, session);
 
-	public String currentGameState = STARTGAME;
+    /*
+     * client needs 3 messages initially: id, configuration, game state
+     */
 
-	// END TODO: move to game configuration service
+    Jsonb jsonb = JsonbBuilder.create();
 
-	// send a message to a single client
-	public void sendOnePlayer(String id, String message) {
-		LOG.info("Sending player for session :" + id);
-		Session oneSession = playerSessions.get(id);
-		oneSession.getAsyncRemote().sendObject(message, result -> {
-			if (result.getException() != null) {
-				LOG.severe("Unable to send message: " + result.getException());
-			}
-		});
-	} // sendOnePlayer
+    /*
+     * Send Game Config TODO: This needs to pick up the current, potentially overridden game config from
+     * the polled configservice for now, just hacking around it with the resetting of the variable
+     */
+    prevPolledResponse = "";
 
-	/**
-	 * 
-	 */
-	public void broadcast(String message) {
-		sessions.keySet().forEach(sessionKey -> {
-			sessions.get(sessionKey).getAsyncRemote().sendObject(message,
-					result -> {
-						if (result.getException() != null) {
-							LOG.log(Level.SEVERE,
-									"Unable to send message: "
-											+ result.getException());
-							LOG.log(Level.SEVERE, "Retrying");
-							sessions.get(sessionKey).getAsyncRemote()
-									.sendObject(message,
-											result2 -> {
-												if (result2
-														.getException() != null) {
-													LOG.log(Level.SEVERE,
-															"2nd failed send, removing: "
-																	+ result2
-																			.getException());
-													sessions.remove(sessionKey);
-												}
-											});
-							// if unable to send, remove it
+    Player playerResp = new Player();
+    playerResp.score = 0;
+    playerResp.team = teamNumber;
+    playerResp.playerId = playerId;
+    playerResp.username = username;
+    playerResp.locationKey = locationKey;
 
-						}
-					});
-		});
+    GameMessage gameMessage = GameMessage.lobbyGameMsg(null);
+    gameMessage.type = "register";
+    gameMessage.player = playerResp;
 
-		// sessions.values().forEach(session -> {
-		// session.getAsyncRemote().sendObject(message, result -> {
-		// if (result.getException() != null) {
+    String strGameMessage = jsonb.toJson(gameMessage);
 
-		// LOG.error("Unable to send message: " + result.getException());
-		// }
-		// });
-		// });
-	} // broadcast
+    sendOnePlayer(playerId, strGameMessage);
 
-	/*
-	 * Mobile/Client/Game requests - called at initial page load, refresh of browser
-	 */
-	public void registerClient(JsonObject jsonMessage, Session session) {
+    LOG.info("\n GAME-MESSAGE: " + strGameMessage + "\n");
 
-		// right now, always create a new playerId during registration
-		String playerId = UUID.randomUUID().toString();
-		// and assigns a new generated user name
-		String username = UserNameGenerator.generate();
-		// and assigns a random team number
-		int teamNumber = ThreadLocalRandom.current().nextInt(1, 5);
-		LOG.info("\nLOCATION_KEY: " + locationKey);
-		LOG.info("\nCreating:");
-		LOG.info("username: " + username);
-		LOG.info("playerId: " + playerId);
-		LOG.info("teamNumber: " + teamNumber);
+  } // registerClient
 
-		playerSessions.putIfAbsent(playerId, session);
+  /*
+   * With each balloon pop, send it to Kafka for async analysis
+   */
+  public String score(JsonObject jsonMessage) {
+    LOG.info("POP: " + jsonMessage.toString());
+    return jsonMessage.toString();
+  }
 
-		/*
-		 * client needs 3 messages initially: id, configuration, game state
-		 */
+  public GameMessage play() {
+    LOG.info("Play the Game");
+    currentGameState = GameState.play.name();
+    return GameMessage.playGameMsg(null);
+  }
 
-		// Send Player's ID
-		JsonObject idResponse = Json.createObjectBuilder()
-				.add("type", "id")
-				.add("id", playerId).build();
+  public GameMessage pause() {
+    LOG.info("Pause the Game");
+    currentGameState = GameState.pause.name();
+    return GameMessage.pauseGameMsg(null);
+  }
 
-		LOG.info("idResponse: " + idResponse.toString());
+  public GameMessage lobby() {
+    LOG.info("Lobby the Game");
+    currentGameState = GameState.lobby.name();
+    return GameMessage.lobbyGameMsg(null);
+  }
 
-		sendOnePlayer(playerId, idResponse.toString());
+  public GameMessage stop() {
+    LOG.info("Game Over");
+    currentGameState = GameState.stop.name();
+    return GameMessage.gameStoppedMsg(null);
+  }
 
+  public Collection<Session> getSessions() {
+    return this.sessions.values();
+  }
 
-		/*
-		 * Send Game Config TODO: This needs to pick up the current, potentially overridden game config from
-		 * the polled configservice for now, just hacking around it with the resetting of the variable
-		 */
-		prevPolledResponse = "";
+  public void addSession(String key, Session value) {
+    this.sessions.putIfAbsent(key, value);
+  }
 
-		RegistrationResponse configurationResponse = new RegistrationResponse(
-				0, // initial score
-				teamNumber,
-				playerId,
-				username,
-				"configuration", // type
-				currentGame, // the actual game config
-				locationKey // AWS, AZR, GCP, etc
-		);
+  public void removeSession(String key) {
+    this.sessions.remove(key);
+  }
 
-		Jsonb jsonb = JsonbBuilder.create();
-		String stringConfigurationResponse =
-				jsonb.toJson(configurationResponse);
-
-		sendOnePlayer(playerId, stringConfigurationResponse);
-
-		LOG.info("\n GAME-STATE: " + currentGameState + "\n");
-
-		// Send Game State
-
-		if (currentGameState.equals(STARTGAME)) {
-			sendOnePlayer(playerId, startGameMsg.toString());
-		} else if (currentGameState.equals(PLAY)) {
-			sendOnePlayer(playerId, playGameMsg.toString());
-		} else if (currentGameState.equals(PAUSE)) {
-			sendOnePlayer(playerId, pauseGameMsg.toString());
-		} else if (currentGameState.equals(GAMEOVER)) {
-			sendOnePlayer(playerId, gameOverMsg.toString());
-		}
-
-	} // registerClient
-
-	/*
-	 * With each balloon pop, send it to Kafka for async analysis
-	 */
-	public String score(JsonObject jsonMessage) {
-		LOG.info("POP: " + jsonMessage.toString());
-		return jsonMessage.toString();
-	}
-
-	public JsonObject start() {
-		currentGameId = UUID.randomUUID().toString();
-		currentGameState = STARTGAME;
-		return startGameMsg;
-	}
-
-	public JsonObject play() {
-		currentGameState = PLAY;
-		return playGameMsg;
-	}
-
-	public JsonObject pause() {
-		LOG.info("Pause the Game");
-		currentGameState = PAUSE;
-		return pauseGameMsg;
-	}
-
-	public JsonObject gameOver() {
-		LOG.info("Game Over");
-		currentGameState = GAMEOVER;
-		return gameOverMsg;
-	}
-
-	public Collection<Session> getSessions() {
-		return this.sessions.values();
-	}
-
-	public void addSession(String key, Session value) {
-		this.sessions.putIfAbsent(key, value);
-	}
-
-	public void removeSession(String key) {
-		this.sessions.remove(key);
-	}
-
-	public Collection<Session> getPlayerSession() {
-		return this.playerSessions.values();
-	}
+  public Collection<Session> getPlayerSession() {
+    return this.playerSessions.values();
+  }
 }

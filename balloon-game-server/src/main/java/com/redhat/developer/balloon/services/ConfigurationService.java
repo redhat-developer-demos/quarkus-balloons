@@ -6,7 +6,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-@RegisterRestClient(configKey = "configservice")
+//@RegisterRestClient(configKey = "configservice")
 public interface ConfigurationService {
   @Path("/config")
   @GET

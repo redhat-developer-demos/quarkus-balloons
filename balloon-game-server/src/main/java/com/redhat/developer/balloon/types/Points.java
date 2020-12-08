@@ -1,15 +1,16 @@
 package com.redhat.developer.balloon.types;
 
 public class Points {
-  private int red;
-  private int yellow;
-  private int green;
-  private int blue;
-  private int goldenSnitch1;
-  private int goldenSnitch2;
+  public int red;
+  public int yellow;
+  public int green;
+  public int blue;
+  public int goldenSnitch1;
+  public int goldenSnitch2;
 
   public Points() {
-
+    new Points(
+      1, 1, 1, 1, 50, 50);
   }
 
   public Points(
@@ -26,30 +27,6 @@ public class Points {
     this.goldenSnitch1 = goldenSnitch1;
     this.goldenSnitch2 = goldenSnitch2;
 
-  }
-
-  public int getRed() {
-    return red;
-  }
-
-  public int getYellow() {
-    return yellow;
-  }
-
-  public int getGreen() {
-    return green;
-  }
-
-  public int getBlue() {
-    return blue;
-  }
-
-  public int getGoldenSnitch1() {
-    return goldenSnitch1;
-  }
-
-  public int getGoldenSnitch2() {
-    return goldenSnitch2;
   }
 
 }
