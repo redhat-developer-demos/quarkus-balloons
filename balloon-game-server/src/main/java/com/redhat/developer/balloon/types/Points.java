@@ -1,6 +1,7 @@
 package com.redhat.developer.balloon.types;
 
 public class Points {
+
   public int red;
   public int yellow;
   public int green;
@@ -9,17 +10,17 @@ public class Points {
   public int goldenSnitch2;
 
   public Points() {
-    new Points(
+    this(
       1, 1, 1, 1, 50, 50);
   }
 
   public Points(
-      int red,
-      int yellow,
-      int green,
-      int blue,
-      int goldenSnitch1,
-      int goldenSnitch2) {
+    int red,
+    int yellow,
+    int green,
+    int blue,
+    int goldenSnitch1,
+    int goldenSnitch2) {
     this.red = red;
     this.yellow = yellow;
     this.green = green;

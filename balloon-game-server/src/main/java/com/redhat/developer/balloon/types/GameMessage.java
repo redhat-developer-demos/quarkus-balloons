@@ -8,6 +8,15 @@ public class GameMessage {
   public Player player;
   public String type;
 
+  public GameMessage() {
+  }
+
+  public GameMessage(Game game, Player player, String type) {
+    this.game = Objects.requireNonNullElseGet(game, Game::new);
+    this.player = player;
+    this.type = Objects.requireNonNullElse(type, "game");
+  }
+
   public static GameMessage activeGameMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     Game game = new Game();

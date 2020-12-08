@@ -3,6 +3,7 @@ package com.redhat.developer.balloon.types;
 import java.util.UUID;
 
 public class Configuration {
+
   public String gameId;
   public String background;
   public int trafficPercentage;
@@ -14,8 +15,8 @@ public class Configuration {
   public Points points;
 
   public Configuration() {
-    new Configuration(UUID.randomUUID()
-                          .toString(), "default",
+    this(UUID.randomUUID()
+             .toString(), "default",
       100, "0.6", 85, 70, false,
       false, new Points());
   }
@@ -37,7 +38,7 @@ public class Configuration {
 }
 
 /*
- * 
+ *
  * { "gameId": "d6d5dc35-c4cd-4299-a171-9092bb4ab645", "background": "canary", "trafficPercentage":
  * 100, "scale": ".9", "opacity": 85, "speed": 35, "goldenSnitch1": true, "goldenSnitch2": true,
  * "points": { "red": 1, "yellow": 1, "green": 1, "blue": 1, "goldenSnitch1": 100, "goldenSnitch2":
