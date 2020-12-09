@@ -3,8 +3,8 @@ package com.redhat.developer.balloon.services;
 import com.redhat.developer.balloon.types.Configuration;
 import com.redhat.developer.balloon.types.GameMessage;
 import com.redhat.developer.balloon.types.GameState;
-import com.redhat.developer.balloon.types.Points;
 import com.redhat.developer.balloon.types.Player;
+import com.redhat.developer.balloon.types.Points;
 import com.redhat.developer.balloon.utils.UserNameGenerator;
 import java.util.Collection;
 import java.util.Map;
@@ -14,6 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
@@ -25,6 +26,9 @@ public class GameService {
 
   private static final Logger LOG =
     Logger.getLogger(GameService.class.getName());
+
+  @Inject
+  GameService gameService;
 
   @ConfigProperty(name = "LOCATION_KEY")
   String locationKey;
@@ -133,7 +137,7 @@ public class GameService {
     playerResp.username = username;
     playerResp.locationKey = locationKey;
 
-    GameMessage gameMessage = GameMessage.lobbyGameMsg(null);
+    GameMessage gameMessage = GameMessage.lobbyGameMsg(currentGameId, null);
     gameMessage.type = "register";
     gameMessage.player = playerResp;
 
@@ -145,36 +149,29 @@ public class GameService {
 
   } // registerClient
 
-  /*
-   * With each balloon pop, send it to Kafka for async analysis
-   */
-  public String score(JsonObject jsonMessage) {
-    LOG.info("POP: " + jsonMessage.toString());
-    return jsonMessage.toString();
-  }
 
   public GameMessage play() {
     LOG.info("Play the Game");
     currentGameState = GameState.play.name();
-    return GameMessage.playGameMsg(null);
+    return GameMessage.playGameMsg(currentGameId, null);
   }
 
   public GameMessage pause() {
     LOG.info("Pause the Game");
     currentGameState = GameState.pause.name();
-    return GameMessage.pauseGameMsg(null);
+    return GameMessage.pauseGameMsg(currentGameId, null);
   }
 
   public GameMessage lobby() {
     LOG.info("Lobby the Game");
     currentGameState = GameState.lobby.name();
-    return GameMessage.lobbyGameMsg(null);
+    return GameMessage.lobbyGameMsg(currentGameId, null);
   }
 
   public GameMessage stop() {
     LOG.info("Game Over");
     currentGameState = GameState.stop.name();
-    return GameMessage.gameStoppedMsg(null);
+    return GameMessage.gameStoppedMsg(currentGameId, null);
   }
 
   public Collection<Session> getSessions() {

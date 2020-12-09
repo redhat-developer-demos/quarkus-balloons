@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon.types;
+package com.redhat.developers.demos.types;
 
 import java.util.Objects;
 
@@ -17,11 +17,9 @@ public class GameMessage {
     this.type = Objects.requireNonNullElse(type, "game");
   }
 
-  public static GameMessage activeGameMsg(String gameId,
-    Configuration configuration) {
+  public static GameMessage activeGameMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     Game game = new Game();
-    game.gameId = gameId;
     game.state = GameState.lobby;
     game.configuration = Objects.requireNonNullElseGet(configuration,
       Configuration::new);
@@ -29,11 +27,10 @@ public class GameMessage {
     return gameMessage;
   }
 
-  public static GameMessage playGameMsg(String gameId,Configuration configuration) {
+  public static GameMessage playGameMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     gameMessage.type = "game";
     Game game = new Game();
-    game.gameId = gameId;
     game.state = GameState.play;
     game.configuration = Objects.requireNonNullElseGet(configuration,
       Configuration::new);
@@ -41,11 +38,10 @@ public class GameMessage {
     return gameMessage;
   }
 
-  public static GameMessage pauseGameMsg(String gameId,Configuration configuration) {
+  public static GameMessage pauseGameMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     gameMessage.type = "game";
     Game game = new Game();
-    game.gameId = gameId;
     game.state = GameState.pause;
     game.configuration = Objects.requireNonNullElseGet(configuration,
       Configuration::new);
@@ -53,11 +49,10 @@ public class GameMessage {
     return gameMessage;
   }
 
-  public static GameMessage gameStoppedMsg(String gameId,Configuration configuration) {
+  public static GameMessage gameStoppedMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     gameMessage.type = "game";
     Game game = new Game();
-    game.gameId = gameId;
     game.state = GameState.stop;
     game.configuration = Objects.requireNonNullElseGet(configuration,
       Configuration::new);
@@ -65,11 +60,10 @@ public class GameMessage {
     return gameMessage;
   }
 
-  public static GameMessage bonusMsg(String gameId,Configuration configuration) {
+  public static GameMessage bonusMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     gameMessage.type = "game";
     Game game = new Game();
-    game.gameId = gameId;
     game.state = GameState.bonus;
     game.configuration = Objects.requireNonNullElseGet(configuration,
       Configuration::new);
@@ -77,11 +71,10 @@ public class GameMessage {
     return gameMessage;
   }
 
-  public static GameMessage lobbyGameMsg(String gameId,Configuration configuration) {
+  public static GameMessage lobbyGameMsg(Configuration configuration) {
     GameMessage gameMessage = new GameMessage();
     gameMessage.type = "game";
     Game game = new Game();
-    game.gameId = gameId;
     game.state = GameState.lobby;
     game.configuration = Objects.requireNonNullElseGet(configuration,
       Configuration::new);

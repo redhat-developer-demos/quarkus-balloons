@@ -1,12 +1,12 @@
-package com.redhat.developer.balloon.streams;
+package com.redhat.developers.demos.streams;
 
+import com.redhat.developers.demos.types.GameBonus;
+import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 import java.util.concurrent.CompletionStage;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import com.redhat.developer.balloon.types.GameBonus;
-import io.smallrye.reactive.messaging.kafka.KafkaMessage;
 
 public class BonusStream {
 

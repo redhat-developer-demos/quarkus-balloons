@@ -1,4 +1,4 @@
-package com.redhat.developer.balloon.types;
+package com.redhat.developers.demos.types;
 
 public class Game {
 

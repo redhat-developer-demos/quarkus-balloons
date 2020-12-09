@@ -204,7 +204,7 @@ public class GameAdminResource {
 
   @GET
   @Path("/hard")
-  @RolesAllowed({"admin"})
+  //@RolesAllowed({"admin"})
   @Produces(MediaType.APPLICATION_JSON)
   public Response hardconfig() {
     Points hardPoints = new Points(

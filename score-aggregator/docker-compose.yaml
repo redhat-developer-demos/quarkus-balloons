@@ -1,12 +1,5 @@
 version: "3.7"
 services:
-  infinispan:
-    image: quay.io/infinispan/server:10.1.7.Final-1
-    ports:
-      - "11222:11222"
-    environment:
-      USER: "infinispan"
-      PASS: "password"
   zookeeper:
     image: strimzi/kafka:0.17.0-kafka-2.4.0
     command:
@@ -19,9 +12,9 @@ services:
     image: strimzi/kafka:0.17.0-kafka-2.4.0
     command:
       [
-        "sh",
-        "-c",
-        "bin/kafka-server-start.sh config/server.properties --override listeners=$${KAFKA_LISTENERS} --override advertised.listeners=$${KAFKA_ADVERTISED_LISTENERS} --override zookeeper.connect=$${KAFKA_ZOOKEEPER_CONNECT}",
+          "sh",
+          "-c",
+          "bin/kafka-server-start.sh config/server.properties --override listeners=$${KAFKA_LISTENERS} --override advertised.listeners=$${KAFKA_ADVERTISED_LISTENERS} --override zookeeper.connect=$${KAFKA_ZOOKEEPER_CONNECT}",
       ]
     depends_on:
       - zookeeper

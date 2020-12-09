@@ -1,14 +1,20 @@
 package com.redhat.developer.balloon.endpoints;
 
 import com.redhat.developer.balloon.services.GameService;
+import com.redhat.developer.balloon.types.GameTransaction;
+import io.smallrye.reactive.messaging.kafka.KafkaRecord;
+import io.smallrye.reactive.messaging.kafka.Record;
 import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -16,6 +22,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 @ServerEndpoint("/game") // for the mobile game
 @ApplicationScoped
@@ -27,12 +35,23 @@ public class GameWebSocket {
   @Inject
   GameService gameService;
 
-  // @Inject
-  // @Channel("popstream")
-  // Emitter<String> popstream;
+  @Inject
+  @Channel("balloon-pops")
+  Emitter<Record<String, String>> scoreEmitter;
 
-  @ConfigProperty(name = "kafkaprops", defaultValue = "false")
+  public GameWebSocket(GameService gameService) {
+    this.gameService = gameService;
+  }
+
+  @ConfigProperty(name = "ballon.game.kafkaforpops", defaultValue = "false")
   boolean kafkaSend;
+
+  Jsonb jsonb;
+
+  @PostConstruct
+  public void init() {
+    this.jsonb = JsonbBuilder.create();
+  }
 
   @OnOpen
   public void onOpen(Session session) {
@@ -65,20 +84,25 @@ public class GameWebSocket {
     JsonObject jsonMessage = jsonReader.readObject();
 
     // LOG.info("jsonMessage: " + jsonMessage);
-    String msgtype = jsonMessage.getString("type");
-    // LOG.info("msgtype: " + msgtype);
+    String messageType = jsonMessage.getString("type");
+    // LOG.info("messageType: " + messageType);
 
-    if (msgtype != null && !msgtype.equals("")) {
-      if (msgtype.equals("register")) {
+    if (messageType != null && !messageType.equals("")) {
+      if (messageType.equals("register")) {
         try {
           gameService.registerClient(jsonMessage, session);
         } catch (Exception e) {
           LOG.log(Level.SEVERE, "Error registering client", e);
         }
-      } else if (msgtype.equals("score")) {
-        var scoreMessage = gameService.score(jsonMessage);
-        // if (kafkaSend) {
-        // popstream.send(scoreMessage);
+      } else if (messageType.equals("score")) {
+        var strMessage = jsonMessage.toString();
+
+        GameTransaction gameTx = jsonb.fromJson(strMessage,
+          GameTransaction.class);
+        var key = gameTx.player.playerId;
+        LOG.log(Level.INFO, "POP:\nKey:{0} \nValue:\n {1}",
+          new Object[]{key, strMessage});
+        scoreEmitter.send(Record.of(key, strMessage));
       }
     }
   }// OnMessage
